@@ -1,63 +1,84 @@
 /// The Last-to-Start Algorithm module containing the necessary components to
 /// build a schedule.
-///
+//
+use std::cmp::Ordering;
 
 /// A Task containing the id, and start and end times
-#[derive(Clone, Copy, Debug)]
+#[derive(Debug, Clone, Copy, Eq)]
 pub struct Task {
     // Id
-    id: u32,
+    pub id: u32,
     // Start Time
-    start: u32,
+    pub start: u32,
     // End Time
-    end: u32,
+    pub end: u32,
+}
+
+impl Ord for Task {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.start.cmp(&other.end)
+    }
+}
+
+impl PartialOrd for Task {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for Task {
+    fn eq(&self, other: &Self) -> bool {
+        self.start == other.end
+    }
 }
 
 /// The Last to Start algorithm
-pub fn l2s_algo(list: Vec<Task>) -> Vec<u32> {
+pub fn l2s_algo(mut list: Vec<Task>) -> Vec<u32> {
 
     let mut schedule = Vec::new();
+    let mut k = 0;
 
     // Sort
-    let sorted = merge_sort(list);
+    merge_sort(&mut list);
 
-    match sorted {
-        // Add the first task to th schedule
-        Some(sched) => schedule.push(sched[0].id),
-
-        // Error
-        None    => println!("Error: Sort Failed"),
-    }
+    // Add the first task to th schedule
+    schedule.push(list[k].id);
 
     // Build the schedule
-    
+    for m in 1..list.len() {
+        // If the start time of m task is later, take m
+        if list[k] >= list[m] {
+            // Put into the schedule
+            schedule.push(list[m].id);
+
+            k = m;
+        }
+    } 
 
     schedule
 }
 
 /// Implementation of Merge Sort
-fn merge_sort(mut arr: Vec<Task>) -> Option<Vec<Task>> {
+fn merge_sort<T: Copy + Ord>(arr: &mut [T]) {
 
     let mid: usize = arr.len() / 2;
     if mid == 0 {
-        ()
+        return;
     }
 
-    merge_sort(arr[..mid].to_vec());
-    merge_sort(arr[mid..].to_vec());
+    merge_sort(&mut arr[..mid]);
+    merge_sort(&mut arr[mid..]);
 
-    let mut ret = arr.clone();
+    let mut ret: Vec<T> = arr.to_vec();
 
     merge(&arr[..mid], &arr[mid..], &mut ret[..]);
 
     arr.copy_from_slice(&ret);
-
-    Some(arr)
     
 }
 
 /// Merge for Merge Sort
-fn merge(left_arr: &[Task], right_arr: &[Task], ret: &mut [Task]) {
+fn merge<T: Copy + PartialOrd>(left_arr: &[T], right_arr: &[T], ret: &mut [T]) {
 
     let mut left = 0;
     let mut right = 0;
@@ -65,7 +86,7 @@ fn merge(left_arr: &[Task], right_arr: &[Task], ret: &mut [Task]) {
 
     while (left < left_arr.len()) && (right < right_arr.len()) {
         // Sort the sub-arrays
-        if left_arr[left].end >= right_arr[right].end {
+        if left_arr[left] >= right_arr[right] {
             ret[index] = left_arr[left];
             index += 1;
             left += 1;

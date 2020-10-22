@@ -12,40 +12,62 @@ fn main() {
     let buf = BufReader::new(file);
 
     let mut tasks = Vec::<l2s_algo::l2s_algo::Task>::new();
-    let mut sched_set = false;
+    let mut sets = Vec::new();
+    let mut set = 0;
+  
+    for line in buf.lines().skip(1) {
 
-    for (i, line) in buf.lines().enumerate() {
+        // Consume the line
+        let l = line.unwrap();
 
-        let mut set = 0;
+        // Split the string
+        let unstruc = l.split_whitespace().collect::<Vec<&str>>();
 
-        if !sched_set {
-            set = line.unwrap().parse::<u32>().unwrap();
-            set -= i as u32;
-            sched_set = true;
+        match unstruc.len() {
+            1   => {
+                    // Store and ready for the next set
+                    if tasks.len() > 0 {
+                        sets.push(tasks.clone());
 
-        } else {
-            if set == 0 {
-                // Run the algo
-                let schedule = l2s_algo::l2s_algo::l2s_algo(tasks);
+                        tasks.clear();
+                    }
+                },
+            3   => {  
+                    // Add the task
+                    let task = l2s_algo::l2s_algo::Task {
+                                id      : unstruc[0].parse::<u32>().unwrap(),
+                                start   : unstruc[1].parse::<u32>().unwrap(),
+                                end     : unstruc[2].parse::<u32>().unwrap(),
+                            };
 
-            } else {
-                // Split the string
-                let unstruc = line.unwrap().split_whitespace()
-                                  .collect::<Vec<&str>>(); 
+                    tasks.push(task);
+                },
+            _   => panic!("Malformed Read"), 
+        };
+                
+    }
 
-                // Add the task
-                let task = l2s_algo::l2s_algo::Task {
-                            id      : unstruc[0].parse::<u32>().unwrap(),
-                            start   : unstruc[1].parse::<u32>().unwrap(),
-                            end     : unstruc[2].parse::<u32>().unwrap(),
-                };
+    // Store the last thing
+    sets.push(tasks);
+    
+    for task in sets {
+        // Increment the set number
+        set += 1;
 
-                tasks.push(task);
+        // Run the algo
+        let schedule = l2s_algo::l2s_algo::l2s_algo(task);
 
-                // Decrement set
-                set -= 1;
-            }
+        // Print out
+        println!("Set {}", set);
+        println!("Number of activities selected: {}", schedule.len());
+        print!("Activities:");
+
+        for i in (0..schedule.len()).rev() {
+            print!(" {}", schedule[i]);
         }
-    }    
+
+        print!("\n");
+    }
+    
     
 }
