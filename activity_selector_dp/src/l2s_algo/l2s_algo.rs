@@ -59,9 +59,9 @@ pub fn l2s_algo(mut list: Vec<Task>) -> Vec<u32> {
 }
 
 /// Implementation of Merge Sort
-fn merge_sort<T: Copy + Ord>(arr: &mut [T]) {
+fn merge_sort(arr: &mut [Task]) {
 
-    let mid: usize = arr.len() / 2;
+    let mid = f32::floor(arr.len() as f32 / 2.0) as usize;
     if mid == 0 {
         return;
     }
@@ -69,7 +69,7 @@ fn merge_sort<T: Copy + Ord>(arr: &mut [T]) {
     merge_sort(&mut arr[..mid]);
     merge_sort(&mut arr[mid..]);
 
-    let mut ret: Vec<T> = arr.to_vec();
+    let mut ret: Vec<Task> = arr.to_vec();
 
     merge(&arr[..mid], &arr[mid..], &mut ret[..]);
 
@@ -78,7 +78,7 @@ fn merge_sort<T: Copy + Ord>(arr: &mut [T]) {
 }
 
 /// Merge for Merge Sort
-fn merge<T: Copy + PartialOrd>(left_arr: &[T], right_arr: &[T], ret: &mut [T]) {
+fn merge(left_arr: &[Task], right_arr: &[Task], ret: &mut [Task]) {
 
     let mut left = 0;
     let mut right = 0;
@@ -86,7 +86,7 @@ fn merge<T: Copy + PartialOrd>(left_arr: &[T], right_arr: &[T], ret: &mut [T]) {
 
     while (left < left_arr.len()) && (right < right_arr.len()) {
         // Sort the sub-arrays
-        if left_arr[left] >= right_arr[right] {
+        if left_arr[left].end >= right_arr[right].end {
             ret[index] = left_arr[left];
             index += 1;
             left += 1;
