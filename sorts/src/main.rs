@@ -18,11 +18,11 @@ fn main() {
     for i in size_pool.iter() {
 
         // Get some RNG
-        let mut rng = thread_rng();
+        let rng = thread_rng();
         let range = Uniform::from(0..10001);
 
         // Create & Fill the array
-        let array: Vec<u32> = (0..*i).map(|_| rng.sample(&range)).collect();
+        let array: Vec<u32> = rng.sample_iter(&range).take(*i).collect();
 
         // Run Insert Sort
         let mut start_time = SystemTime::now();
