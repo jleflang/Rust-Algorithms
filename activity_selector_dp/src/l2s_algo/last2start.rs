@@ -33,13 +33,13 @@ impl PartialEq for Task {
 }
 
 /// The Last to Start algorithm
-pub fn l2s_algo(mut list: Vec<Task>) -> Vec<u32> {
+pub fn l2s_algo(list: &mut Vec<Task>) -> Vec<u32> {
 
-    let mut schedule = Vec::new();
+    let mut schedule = Vec::with_capacity(list.len());
     let mut k = 0;
 
     // Sort
-    merge_sort(&mut list);
+    merge_sort(list);
 
     // Add the first task to th schedule
     schedule.push(list[k].id);

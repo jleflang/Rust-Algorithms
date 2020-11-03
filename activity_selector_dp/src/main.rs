@@ -12,9 +12,7 @@ fn main() {
 
     let mut buf = BufReader::new(file);
 
-    let mut tasks = Vec::<l2s_algo::l2s_algo::Task>::new();
     let mut sets = Vec::new();
-    let mut set = 0;
   
     // Loop until the file is empty
     loop {
@@ -28,10 +26,13 @@ fn main() {
         if line_size == 0 { break; }
 
         // Set the number of jobs to schedule
-        let jobs = cur_str.trim().parse::<u32>().expect("Malformed Job Size");
+        let jobs = cur_str.trim().parse::<usize>().expect("Malformed Job Size");
 
         // Clear the buffer
         cur_str.clear();
+
+        // Allocate a vector to store all tasks
+        let mut tasks = Vec::<l2s_algo::last2start::Task>::with_capacity(jobs);
 
         for _ in 0..jobs {
 
@@ -45,10 +46,10 @@ fn main() {
             if job.len() != 3 { panic!("Malformed File")};
 
             // Store the job
-            let task = l2s_algo::l2s_algo::Task {
-                        id      : job[0].parse::<u32>().unwrap(),
-                        start   : job[1].parse::<u32>().unwrap(),
-                        end     : job[2].parse::<u32>().unwrap(),
+            let task = l2s_algo::last2start::Task {
+                        id      : job[0].parse::<u32>().expect("Bad id"),
+                        start   : job[1].parse::<u32>().expect("Bad Start"),
+                        end     : job[2].parse::<u32>().expect("Bad End"),
             };
 
             // Add to the list
@@ -60,34 +61,30 @@ fn main() {
         }
 
         // Add to the list of sets
-        sets.push(tasks.clone());
+        sets.push(tasks);
 
-        // Clear the task list
-        tasks.clear();
     }
-    
+
     // Process each 
-    for task in sets {
-        // Increment the set number
-        set += 1;
+    for (i, tasks) in sets.iter_mut().enumerate() {
 
         // Start the clock
         let start = Instant::now();
 
         // Run the algo
-        let schedule = l2s_algo::l2s_algo::l2s_algo(task);
+        let schedule = l2s_algo::last2start::l2s_algo(tasks);
 
         // Stop the clock
         let dur = start.elapsed();
 
         // Print out
-        println!("Set {}", set);
+        println!("Set {}", i + 1);
         println!("Number of activities selected: {}", schedule.len());
         print!("Activities:");
 
         schedule.iter().rev().for_each(|id| print!(" {}", id));
 
-        print!("\n");
+        println!();
 
         println!("Done in {:?}", dur);
     }
