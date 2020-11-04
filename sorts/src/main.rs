@@ -2,12 +2,12 @@
 /// wall time performance of each and prints the output to file.
 /// This is purely a standard academic exercise and thus may not be 
 /// optimal/correct for production use.
-use std::time::SystemTime;
+use std::time::Instant;
 use rand::{thread_rng, Rng, distributions::Uniform};
 
 fn main() {
 
-    let size_pool = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+    let size_pool = &[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
     
     // Print the header
     println!("{: <10}\t| {: <10}\t| {: <10}\t| {: <10}", 
@@ -15,7 +15,7 @@ fn main() {
     println!("{: <10}\t| {: <10}\t| {: <10}\t| {: <10}", 
             "", "Insert", "Merge", "Stooge");
 
-    for i in size_pool.iter() {
+    for i in size_pool {
 
         // Get some RNG
         let rng = thread_rng();
@@ -25,24 +25,23 @@ fn main() {
         let array: Vec<u32> = rng.sample_iter(&range).take(*i).collect();
 
         // Run Insert Sort
-        let mut start_time = SystemTime::now();
+        let mut start_time = Instant::now();
         insert_sort(&mut array.clone());
         let since_sort_insert = start_time.elapsed();
 
         // Run Merge Sort
-        start_time = SystemTime::now();
+        start_time = Instant::now();
         merge_sort(&mut array.clone());
         let since_sort_merge = start_time.elapsed();
 
         // Run Stooge Sort
-        start_time = SystemTime::now();
+        start_time = Instant::now();
         stooge_sort(&mut array.clone());
         let since_sort_stooge = start_time.elapsed();
 
         // Print the results
         println!("{: <10}\t| {: <10.3?}\t| {: <10.3?}\t| {: <10.3?}", 
-                    *i, since_sort_insert.unwrap(), since_sort_merge.unwrap(), 
-                        since_sort_stooge.unwrap());
+                   *i, since_sort_insert, since_sort_merge, since_sort_stooge);
 
     }
 
@@ -64,16 +63,18 @@ fn insert_sort(arr: &mut Vec<u32>) {
 }
 
 /// Implementation of Merge Sort
-fn merge_sort(arr: &mut Vec<u32>) {
+fn merge_sort(arr: &mut [u32]) {
 
     let mid = f32::floor(arr.len() as f32 / 2.0) as usize;
 
     if mid == 0 { return; }
 
-    merge_sort(&mut arr[..mid].to_vec());
-    merge_sort(&mut arr[mid..].to_vec());
+    merge_sort(&mut arr[..mid]);
+    merge_sort(&mut arr[mid..]);
 
-    let mut ret = arr.clone();
+    let mut ret = Vec::<u32>::new();
+    
+    ret.extend_from_slice(&arr);
 
     merge(&arr[..mid], &arr[mid..], &mut ret[..]);
 
@@ -113,7 +114,7 @@ fn merge(left_arr: &[u32], right_arr: &[u32], ret: &mut [u32]) {
 }
 
 /// Implementation of Stooge Sort
-fn stooge_sort(arr: &mut Vec<u32>) {
+fn stooge_sort(arr: &mut [u32]) {
 
     let len = arr.len();
 
@@ -128,8 +129,8 @@ fn stooge_sort(arr: &mut Vec<u32>) {
     if len > 2 {
         let m =  f32::floor(len as f32 / 3.0) as usize;
 
-        stooge_sort(&mut arr[..len-m].to_vec());
-        stooge_sort(&mut arr[m..len].to_vec());
-        stooge_sort(&mut arr[..len-m].to_vec());
+        stooge_sort(&mut arr[..len-m]);
+        stooge_sort(&mut arr[m..len]);
+        stooge_sort(&mut arr[..len-m]);
     }
 }
